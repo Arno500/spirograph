@@ -86,7 +86,7 @@ const gui = new dat.GUI({
 
 const params = {
   color: Please.make_color(),
-  changeColor: () => (params.color = Please.make_color()),
+  changeColor: () => (params.color = Please.make_color({ golden: true })),
   changePointsPosition: () => bootstrapPoints(),
   autoSwitchPointsPositionIntervalTime: 0,
   autoSwitchPointPositionInterval: null,
