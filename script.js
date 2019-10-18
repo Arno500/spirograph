@@ -1,8 +1,11 @@
 const canvas = document.querySelector("canvas");
 const fpsMeter = document.querySelector("p");
 const ctx = canvas.getContext("2d");
-canvas.width = canvas.clientWidth;
-canvas.height = canvas.clientHeight;
+
+function setCanvasSize() {
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+}
 
 // Events Managing
 
@@ -33,6 +36,7 @@ const gui = new dat.GUI({
       "Windows XP-like": {
         "0": {
           changeColorEachTime: true,
+          pointsAmount: 2,
           speed: 15.4,
           play: true,
           autoSwitchPointsPositionIntervalTime: 0.5,
@@ -43,6 +47,7 @@ const gui = new dat.GUI({
       "Knick Knack (Disney)": {
         "0": {
           changeColorEachTime: true,
+          pointsAmount: 2,
           speed: 0.8,
           play: true,
           autoSwitchPointsPositionIntervalTime: 0.4,
@@ -53,16 +58,18 @@ const gui = new dat.GUI({
       "Rainbow ribbons": {
         "0": {
           changeColorEachTime: true,
+          pointsAmount: 2,
+          pointSize: 2,
           speed: 0.8,
           play: true,
           autoSwitchPointsPositionIntervalTime: 0.8,
-          autoSwitchColorIntervalTime: 0.05,
-          pointSize: 2
+          autoSwitchColorIntervalTime: 0.05
         }
       },
       Spirograph: {
         "0": {
           changeColorEachTime: false,
+          pointsAmount: 2,
           speed: 4.2,
           play: true,
           autoSwitchPointsPositionIntervalTime: 0,
@@ -72,10 +79,34 @@ const gui = new dat.GUI({
       "Colored spirograph": {
         "0": {
           changeColorEachTime: false,
+          pointsAmount: 2,
           speed: 4.2,
           play: true,
           autoSwitchPointsPositionIntervalTime: 0,
           autoSwitchColorIntervalTime: 0.6900000000000001
+        }
+      },
+      "Microsoft logo generator": {
+        "0": {
+          speed: 0.9,
+          pointSize: 0,
+          pointsAmount: 4,
+          play: true,
+          autoSwitchPointsPositionIntervalTime: 0.9,
+          autoSwitchColorIntervalTime: 0,
+          changeColorEachTime: true
+        }
+      },
+      "Spider web": {
+        "0": {
+          speed: 10.600000000000001,
+          pointSize: 0,
+          pointsAmount: 2,
+          lineAlpha: 0.2,
+          play: true,
+          autoSwitchPointsPositionIntervalTime: 0,
+          autoSwitchColorIntervalTime: 0,
+          changeColorEachTime: true
         }
       }
     },
@@ -96,11 +127,15 @@ const params = {
   speed: 0.9,
   play: true,
   pointSize: 2,
+  pointsAmount: 2,
+  lineAlpha: 1,
   clear: () => init()
 };
 
 gui.add(params, "speed", 0, 30, 0.1);
 gui.add(params, "pointSize", 0, 10, 0.1);
+const pointsAmountController = gui.add(params, "pointsAmount", 1, 30, 1);
+gui.add(params, "lineAlpha", 0, 1, 0.01);
 const playController = gui.add(params, "play");
 const intervalController = gui.add(
   params,
@@ -124,6 +159,10 @@ gui.remember(params);
 
 // GUI Events managing
 
+pointsAmountController.onFinishChange(val => {
+  params.clear();
+  bootstrapPoints();
+});
 playController.onFinishChange(val => {
   if (val === true) {
     animate(fps);
@@ -191,7 +230,7 @@ class Point {
 function bootstrapPoints() {
   points = [];
   if (params.changeColorEachTime) params.changeColor();
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < params.pointsAmount; i++) {
     points.push(
       new Point(
         new Victor(
@@ -212,6 +251,7 @@ calcFPS({
 });
 
 function init(fps) {
+  setCanvasSize();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#333333";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -233,19 +273,21 @@ function animate(expectedFPS) {
     const elementN1 = points[n + 1];
 
     ctx.strokeStyle = params.color;
-    // ctx.globalAlpha = convertRange(DISTANCE - distance, [0, 100], [0, 1]);
+    ctx.globalAlpha = params.lineAlpha;
     ctx.beginPath();
     ctx.moveTo(elementN.pos.x, elementN.pos.y);
     // ctx.lineWidth = clamp(DISTANCE / distance, 0, 1) * 1;
     ctx.lineTo(elementN1.pos.x, elementN1.pos.y);
     ctx.stroke();
     ctx.closePath();
-    // ctx.globalAlpha = 1;
+    ctx.globalAlpha = 1;
   }
   if (params.play) {
     requestAnimationFrame(() => animate(expectedFPS));
   }
 }
+
+// Tools
 
 function clamp(number, min, max) {
   return Math.max(min, Math.min(number, max));
@@ -276,3 +318,5 @@ function calcFPS(opts) {
     start = performance.now();
   checker();
 }
+
+window.onresize = params.clear;
