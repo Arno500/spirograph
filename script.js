@@ -276,7 +276,6 @@ function animate(expectedFPS) {
     ctx.globalAlpha = params.lineAlpha;
     ctx.beginPath();
     ctx.moveTo(elementN.pos.x, elementN.pos.y);
-    // ctx.lineWidth = clamp(DISTANCE / distance, 0, 1) * 1;
     ctx.lineTo(elementN1.pos.x, elementN1.pos.y);
     ctx.stroke();
     ctx.closePath();
